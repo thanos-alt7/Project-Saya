@@ -7,64 +7,64 @@ use App\Models\Project;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return view('projects.index', ['projects' => Project::all()]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('projects.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|max:200',
-            'description' => 'required'
+        // validasi min=5 dan min=10
+        $validatedData = $request->validate([
+            'title' => 'required|max:200|min:5',
+            'description' => 'required|min:10'
         ]);
-        Project::create($request->only(['title', 'description']));
-        return redirect()->route('projects.index');
+
+        Project::create($validatedData);
+
+        // flash message dengan with()
+        return redirect()->route('projects.index')
+            ->with('success', 'Project berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         return view('projects.show', ['project' => Project::find($id)]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        //
+        // Mengambil data spesifik berdasarkan ID untuk ditampilkan di form edit
+        $project = Project::findOrFail($id);
+        return view('projects.edit', compact('project'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        // Validasi yang sama diterapkan saat melakukan update
+        $validatedData = $request->validate([
+            'title' => 'required|max:200|min:5',
+            'description' => 'required|min:10'
+        ]);
+
+        $project = Project::findOrFail($id);
+        $project->update($validatedData);
+
+        return redirect()->route('projects.index')
+            ->with('success', 'Project berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $project = Project::findOrFail($id);
+        $project->delete();
+
+        return redirect()->route('projects.index')
+            ->with('success', 'Project berhasil dihapus.');
     }
 }
